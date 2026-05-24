@@ -394,6 +394,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="view-tareas" class="view"><div id="admin-tareas-grid"></div></div>
     <div id="view-plantillas" class="view"><div id="plantillas-grid"></div></div>
     <div id="view-config" class="view"><div id="config-body"></div></div>
+    <div id="view-super" class="view"><div id="super-body"></div></div>
   </div>
 </div>
 
@@ -1175,7 +1176,7 @@ function getSeedRecipes(){
 }
 
 // ── TAB MANAGEMENT ─────────────────────────────────────────────
-var TABS=['semana','mes','recetas','tareas','plantillas','config'];
+var TABS=['semana','mes','recetas','tareas','plantillas','config','super'];
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',TABS[i]===tab);});
   document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
@@ -1187,6 +1188,7 @@ function switchTab(tab){
   if(tab==='mes')renderMonth();
   if(tab==='recetas')renderRecipes();
   if(tab==='tareas')renderAdminTareas();
+  if(tab==='super')renderSuperTab();
   if(tab==='plantillas')renderTemplates();
   if(tab==='config')renderConfig();
 }
