@@ -598,7 +598,15 @@ function loadFamilyData(){
   var id=S.fam.id;
   S.menu=DB.menu(id);
   var sr=DB.recipes(id);
-  S.recipes=sr!==null?sr:getSeedRecipes();
+  if(sr===null){S.recipes=getSeedRecipes();}
+  else{
+    // Merge: add any seed recipes whose id is not already saved
+    var seed=getSeedRecipes();
+    var existingIds=sr.map(function(r){return r.id;});
+    var toAdd=seed.filter(function(r){return existingIds.indexOf(r.id)===-1;});
+    S.recipes=toAdd.length>0?sr.concat(toAdd):sr;
+    if(toAdd.length>0)DB.saveRecipes(id,S.recipes);
+  }
   S.tasks=DB.tasks(id);
   S.taskDone=DB.taskDone(id);
   S.defaults=DB.defaults();
