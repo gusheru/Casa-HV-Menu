@@ -335,7 +335,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .scw{overflow-x:visible;}
   .meal-grid{min-width:unset;}
 }
+.mob-bottom-nav{display:none;}
+.mob-more-sheet{display:none;}
 @media(max-width:640px){
+  .tabs{display:none !important;}
+  .mob-bottom-nav{
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:var(--card);
+    border-top:1px solid var(--border);
+    padding:6px 0 max(10px,env(safe-area-inset-bottom));
+    z-index:50;
+  }
+  .mbn-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    gap:3px;padding:8px 2px 4px;
+    background:none;border:none;color:var(--muted);
+    font-size:.6rem;font-weight:600;font-family:inherit;cursor:pointer;
+    transition:color .2s;
+  }
+  .mbn-btn span:first-child{font-size:1.5rem;line-height:1;}
+  .mbn-btn.active{color:var(--primary);}
+  .mob-more-sheet{
+    position:fixed;
+    bottom:calc(62px + env(safe-area-inset-bottom));
+    left:8px;right:8px;
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:10px;
+    z-index:49;
+    flex-direction:column;
+    gap:2px;
+    box-shadow:0 -4px 24px rgba(0,0,0,.5);
+  }
+  .mob-more-sheet.open{display:flex;}
+  .mob-more-sheet button{
+    background:none;border:none;color:var(--text);
+    font-size:.92rem;font-weight:600;font-family:inherit;
+    padding:13px 16px;text-align:left;cursor:pointer;
+    border-radius:12px;transition:background .15s;
+  }
+  .mob-more-sheet button:hover,.mob-more-sheet button:active{background:var(--card);}
+  .admin-body{padding-bottom:calc(70px + env(safe-area-inset-bottom));}
   .scw{display:none;}
   .mob-dnav{display:flex;gap:6px;padding:10px 13px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
   .mob-dnav::-webkit-scrollbar{display:none;}
@@ -453,6 +496,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="view-plantillas" class="view"><div id="plantillas-grid"></div></div>
     <div id="view-config" class="view"><div id="config-body"></div></div>
     <div id="view-super" class="view"><div id="super-body"></div></div>
+  </div>
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mob-bottom-nav" id="mob-bottom-nav">
+    <button class="mbn-btn active" onclick="mobTab('semana')" data-tab="semana"><span>&#128197;</span><span>Semana</span></button>
+    <button class="mbn-btn" onclick="mobTab('recetas')" data-tab="recetas"><span>&#128218;</span><span>Recetas</span></button>
+    <button class="mbn-btn" onclick="mobTab('super')" data-tab="super"><span>&#128722;</span><span>Super</span></button>
+    <button class="mbn-btn" onclick="mobTab('config')" data-tab="config"><span>&#9881;&#65039;</span><span>Config</span></button>
+    <button class="mbn-btn" id="mbn-mas" onclick="toggleMobMore()"><span>&#8801;</span><span>M&#225;s</span></button>
+  </nav>
+  <div class="mob-more-sheet" id="mob-more-sheet">
+    <button onclick="mobTab('mes');toggleMobMore()">&#128198; Mes</button>
+    <button onclick="mobTab('tareas');toggleMobMore()">&#9989; Tareas</button>
+    <button onclick="mobTab('plantillas');toggleMobMore()">&#128203; Plantillas</button>
   </div>
 </div>
 
@@ -1235,6 +1291,18 @@ function getSeedRecipes(){
 
 // ── TAB MANAGEMENT ─────────────────────────────────────────────
 var TABS=['semana','mes','recetas','tareas','plantillas','config','super'];
+function mobTab(tab){
+  switchTab(tab);
+  document.querySelectorAll('.mbn-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.tab===tab);
+  });
+  var ms=document.getElementById('mob-more-sheet');
+  if(ms)ms.classList.remove('open');
+}
+function toggleMobMore(){
+  var ms=document.getElementById('mob-more-sheet');
+  if(ms)ms.classList.toggle('open');
+}
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',TABS[i]===tab);});
   document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
