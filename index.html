@@ -992,7 +992,8 @@ function renderConfig(){
     html+="</div>";
   });
   html+="</div>";
-  html+="<div class='cfg-section'><div class='cfg-section-title'>🔐 PINs</div>";
+  html+="<div class='cfg-section'><div class='cfg-section-title'>&#128101; Empleada / Cocinera</div><div class='fg'><label>Nombre de la empleada</label><input type='text' id='cfg-cookname' value='"+(fam.cookName||'Elena')+"' placeholder='Ej: Elena' style='font-size:16px'></div></div>";
+  html+="<div class='cfg-section'><div class='cfg-section-title'>&#128272; PINs</div>";
   html+="<div class='trow2'><div class='fg'><label>PIN Admin</label><input type='password' id='cfg-apin' value='"+fam.adminPin+"' maxlength='4'></div><div class='fg'><label>PIN Cocinera</label><input type='password' id='cfg-cpin' value='"+fam.cookPin+"' maxlength='4'></div></div></div>";
   html+="<button class='cfg-save-btn' onclick='saveConfig()'>💾 Guardar configuración</button>";
   document.getElementById('config-body').innerHTML=html;
@@ -1025,6 +1026,7 @@ function saveConfig(){
   var ap=document.getElementById('cfg-apin').value.trim();
   var cp=document.getElementById('cfg-cpin').value.trim();
   if(ap.length<4||cp.length<4){toast('Los PINs deben tener 4 dígitos');return;}
+  var cn=document.getElementById('cfg-cookname');if(cn&&cn.value.trim())S.fam.cookName=cn.value.trim();
   S.fam.adminPin=ap;S.fam.cookPin=cp;
   saveFamilyObj();toast('✅ Configuración guardada');
 }
