@@ -1115,6 +1115,112 @@ function switchTab(tab){
 }
 function closeRModal(){document.getElementById('rmodal').classList.remove('open');}
 
+// ── SUPER ──────────────────────────────────────────────────────
+function renderSuperTab(){
+  var wk=gwk(S.wOff),menuData=S.menu[wk]||{},mts=activeMTs();
+  var superData=DB.super(S.fam.id);
+  var items=superData.items||[];
+  var html="";
+  html+="<div class='super-week-nav'><button onclick='changeWeek(-1);renderSuperTab()'>&#8592;</button><span>Semana "+wk+"</span><button onclick='changeWeek(1);renderSuperTab()'>&#8594;</button></div>";
+  html+="<div class='section-lbl'>🥦 Del menú (ingredientes)</div>";
+  var groups=[];
+  DAYS.forEach(function(day){
+    if(!menuData[day])return;
+    mts.forEach(function(mt){
+      var allP=['shared'].concat(S.fam.members||[]);
+      allP.forEach(function(p){
+        var meal=menuData[day][mt.id]&&menuData[day][mt.id][p];
+        if(meal&&meal.ingredientes&&meal.ingredientes.trim()){
+          groups.push({key:day+'_'+mt.id+'_'+p,label:DAYS_ES[DAYS.indexOf(day)]+' – '+mt.emoji+' '+mt.label+(p!=='shared'?' ('+p+')':''),meal:meal.nombre,ings:meal.ingredientes});
+        }
+      });
+    });
+  });
+  if(groups.length){
+    groups.forEach(function(g,gi){
+      html+="<div class='super-meal-group'><div class='super-meal-name'>"+g.label+": "+g.meal+"</div>";
+      var lines=g.ings.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+      lines.forEach(function(line,li){
+        var k='mi_'+gi+'_'+li;
+        var chk=superData.menuChecked&&superData.menuChecked[k];
+        html+="<div class='super-item"+(chk?' checked':'')+"' onclick='toggleMenuIng(\""+k+"\")'><span class='super-cb'>"+(chk?'&#10003;':'')+"</span><span class='super-ing-text'>"+line+"</span></div>";
+      });
+      html+="</div>";
+    });
+  } else {
+    html+="<div class='empty' style='padding:16px 0'>Agrega ingredientes a las comidas del menú para verlos aquí.</div>";
+  }
+  html+="<div class='section-lbl'>📝 Requisiciones extras</div>";
+  html+="<div class='super-add-row'><input type='text' id='super-new-item' placeholder='Agregar producto...' onkeydown='if(event.key===\"Enter\")addSuperItem()'><button class='super-add-btn' onclick='addSuperItem()'>+</button></div>";
+  var pending=items.filter(function(i){return!i.checked;});
+  var done=items.filter(function(i){return i.checked;});
+  if(!pending.length&&!done.length)html+="<div class='empty' style='padding:8px 0;font-size:.82rem'>Sin requisiciones aún.</div>";
+  pending.forEach(function(item){
+    html+="<div class='super-item'><span class='super-cb' onclick='toggleSuperItem(\""+item.id+"\")'></span><span class='super-req-text'>"+item.text+"</span><span class='super-by'>"+item.addedBy+"</span><button class='super-del' onclick='deleteSuperItem(\""+item.id+"\")'>&#128465;</button></div>";
+  });
+  if(done.length){
+    html+="<div class='section-lbl' style='font-size:.72rem;opacity:.6;margin-top:16px'>&#10003; Ya en el carrito ("+done.length+")</div>";
+    done.forEach(function(item){
+      html+="<div class='super-item checked'><span class='super-cb' onclick='toggleSuperItem(\""+item.id+"\")'>&#10003;</span><span class='super-req-text'>"+item.text+"</span><span class='super-by'>"+item.addedBy+"</span><button class='super-del' onclick='deleteSuperItem(\""+item.id+"\")'>&#128465;</button></div>";
+    });
+    html+="<button class='super-clear-btn' onclick='clearCheckedSuper()'>&#128465; Limpiar comprados</button>";
+  }
+  document.getElementById('super-body').innerHTML=html;
+}
+function addSuperItem(){
+  var el=document.getElementById('super-new-item');
+  if(!el)return;
+  var text=el.value.trim();
+  if(!text){toast('Escribe qué necesitas');return;}
+  var superData=DB.super(S.fam.id);
+  superData.items=superData.items||[];
+  superData.items.push({id:'si_'+Date.now(),text:text,addedBy:S.role||S.fam.name,checked:false});
+  DB.saveSuper(S.fam.id,superData);
+  el.value='';
+  renderSuperTab();
+  toast('✅ Agregado');
+}
+function addCookSuperItem(){
+  var el=document.getElementById('cook-super-input');
+  if(!el)return;
+  var text=el.value.trim();
+  if(!text){toast('Escribe qué necesitas');return;}
+  var superData=DB.super(S.fam.id);
+  superData.items=superData.items||[];
+  superData.items.push({id:'si_'+Date.now(),text:text,addedBy:'Elena',checked:false});
+  DB.saveSuper(S.fam.id,superData);
+  el.value='';
+  renderCocinera();
+  toast('✅ Agregado a la lista del super');
+}
+function toggleMenuIng(key){
+  var superData=DB.super(S.fam.id);
+  if(!superData.menuChecked)superData.menuChecked={};
+  superData.menuChecked[key]=!superData.menuChecked[key];
+  DB.saveSuper(S.fam.id,superData);
+  renderSuperTab();
+}
+function toggleSuperItem(id){
+  var superData=DB.super(S.fam.id);
+  var item=(superData.items||[]).find(function(i){return i.id===id;});
+  if(item)item.checked=!item.checked;
+  DB.saveSuper(S.fam.id,superData);
+  renderSuperTab();
+}
+function deleteSuperItem(id){
+  var superData=DB.super(S.fam.id);
+  superData.items=(superData.items||[]).filter(function(i){return i.id!==id;});
+  DB.saveSuper(S.fam.id,superData);
+  renderSuperTab();
+}
+function clearCheckedSuper(){
+  var superData=DB.super(S.fam.id);
+  superData.items=(superData.items||[]).filter(function(i){return!i.checked;});
+  DB.saveSuper(S.fam.id,superData);
+  renderSuperTab();
+  toast('&#128465; Lista limpiada');
+}
+
 // ── INIT ───────────────────────────────────────────────────────
 (function init(){renderWelcome();})();
 
